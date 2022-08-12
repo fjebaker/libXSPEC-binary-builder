@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "LibXSPEC"
 
 # !!! don't make changes without bumping !!!
-version = v"0.1.10"
+version = v"0.1.14"
 
 sources = [
     # ArchiveSource("https://heasarc.gsfc.nasa.gov/cgi-bin/Tools/tarit/tarit.pl?mode=download&arch=src&src_pc_linux_debian=Y&src_other_specify=&general=heasptools&general=heagen&xanadu=xspec")
@@ -20,11 +20,15 @@ cd ${WORKSPACE}/srcdir/BUILD_DIR
 # Need this to avoid undefined symbols
 export LDFLAGS="-lgfortran"
 
-if [[ ${target} == *'aarch64-apple-darwin'* ]] ; then
-    # Need to link BLAS explicitly to avoid missing symbols
-    export LDFLAGS="$LDFLAGS -lblastrampoline -lquadmath"
+CONFIGURE_FLAGS="--prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-x --enable-xs-models-only"
 
-    ./configure --prefix=${prefix} --host=${target} --disable-x --enable-xs-models-only --enable-mac_arm_build
+if [[ ${target} == *'apple-darwin'* ]] ; then
+    # Need to link BLAS explicitly to avoid missing symbols
+    export LDFLAGS="$LDFLAGS -lblas -lquadmath"
+
+    if [[ ${target} == *'aarch64-apple-darwin'* ]] ; then
+        CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-mac_arm_build"
+    fi
 
     # Need to compile hd_install for the container seperately
     /opt/x86_64-linux-musl/bin/x86_64-linux-musl-gcc -o ./hd_install.o -Wall --pedantic -Wno-comment -Wno-long-long -g  -Dunix -fPIC -fno-common hd_install.c
@@ -33,9 +37,10 @@ if [[ ${target} == *'aarch64-apple-darwin'* ]] ; then
 
     # Copy it everywhere it is needed and remove the old source version
     for i in $(find ${WORKSPACE}/srcdir -type f -name "hd_install.c"); do loc=$(dirname $i) && cp ${WORKSPACE}/srcdir/BUILD_DIR/hd_install $loc && rm -f $loc/hd_install.c; done
-else
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-x --enable-xs-models-only
 fi
+
+# Configure with selected flags
+./configure $CONFIGURE_FLAGS
 
 # Can't use `-j`, since parallel compilation breaks XSPEC :/
 # XSPEC compiles `hd_install` as the first target, which is used throughout the rest of the Makefile
@@ -46,18 +51,8 @@ make install
 rm -fr ${prefix}/heacore/*/lib/cmake ${prefix}/heacore/*/lib/pkgconfig
 mv ${prefix}/heacore/*/lib/* ${prefix}/lib/
 mv ${prefix}/heacore/*/include/* ${prefix}/include/
-
 mv ${prefix}/Xspec/*/lib/* ${prefix}/lib/
 mv ${prefix}/Xspec/*/include/* ${prefix}/include/
-
-# Simlink some shared libraries, otherwise fails to find them
-if [[ ${target} == *'apple-darwin'* ]] ; then
-    ln -s ${prefix}/lib/libgsl.dylib ${prefix}/lib/libgsl.1.dylib
-else
-    ln -s ${prefix}/lib/libcfitsio.so.9 ${prefix}/lib/libcfitsio.9.so 
-    ln -s ${prefix}/lib/libreadline.so ${prefix}/lib/libreadline.8.so
-    ln -s ${prefix}/lib/libfgsl.so ${prefix}/lib/libfgsl.1.so
-fi
 
 # Remove bloat
 ls ${prefix}
@@ -79,24 +74,19 @@ install_license ${WORKSPACE}/srcdir/LICENSE
 """
 
 platforms = [
-    #Platform("x86_64", "linux"; libc="glibc", libgfortran_version="5.0.0"),
-    #Platform("x86_64", "linux"; libc="glibc", libgfortran_version="4.0.0"),
-    Platform("aarch64", "macos"; libgfortran_version="5.0.0"),
-    #Platform("x86_64", "macos"; libc="glibc", libgfortran_version="5.0.0")
+    Platform("x86_64", "linux"; libc="glibc", libgfortran_version="5.0.0"),
+    Platform("x86_64", "linux"; libc="glibc", libgfortran_version="4.0.0"),
+    #Platform("aarch64", "macos"; libgfortran_version="5.0.0"),
+    #Platform("x86_64", "macos"; libgfortran_version="5.0.0"),
+    #Platform("x86_64", "macos"; libgfortran_version="4.0.0")
 ]
-#platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms)
 # platforms = expand_gfortran_versions(platforms)
 
 products = map([
-    # "libwcs" => :libwcs,
-    # "libcfitsio" => :libcfitsio,
-    # "libCCfits" => :libCCfits,
-    # "libhdsp" => :libhdsp,
-    # "libreadline" => :libreadline,
-    # "libape" => :libape,
-    # "libhdio" => :libhdio,
-    # "libhdutils" => :libhdutils,
-    # "libfgsl" => :libfgsl,
+    "libcfitsio" => :libcfitsio,
+    "libreadline" => :libreadline,
+    "libfgsl" => :libfgsl,
     "libXS" => :libXS,
     "libXSUtil" => :libXSUtil,
     "libXSFunctions" => :libXSFunctions
@@ -106,7 +96,7 @@ end
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"),
+    #Dependency("libblastrampoline_jll"),
     Dependency("Ncurses_jll"),
     Dependency("Zlib_jll")
 ]
