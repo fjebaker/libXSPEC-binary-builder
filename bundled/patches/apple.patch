@@ -1,0 +1,1221 @@
+diff --git a/BUILD_DIR/Makefile.in b/BUILD_DIR/Makefile.in
+index 2c09eb2c..a3b4d75a 100644
+--- a/BUILD_DIR/Makefile.in
++++ b/BUILD_DIR/Makefile.in
+@@ -10,8 +10,8 @@ all local: check-selection hd_install
+ 	@${MAKE} ${HD_SELECTED} HD_TARGET=$@
+ 	@echo "Finished make $@" >&2
+ 
+-hd_install: hd_install.c
+-	${CC} ${CFLAGS} -o $@ hd_install.c
++hd_install:
++	@echo -n "SKIPPING HD_INSTALL"
+ 
+ install: check-selection
+ 	@${MAKE} ${HD_SELECTED} HD_TARGET=$@
+diff --git a/BUILD_DIR/configure.in b/BUILD_DIR/configure.in
+index 80b3843c..3703dfc9 100644
+--- a/BUILD_DIR/configure.in
++++ b/BUILD_DIR/configure.in
+@@ -827,131 +827,7 @@ fi
+ 
+ AC_MSG_NOTICE([Preliminary check of compiler choices...])
+ 
+-APPLEXCODE="no"
+-
+-# Existence of CC:
+-if test "x$CC" != x; then
+-  AC_MSG_NOTICE([Checking your C compiler setting ($CC)...])
+-  if test ! -x $CC; then
+-    # Allow for $CC to have been set without a path:
+-    AC_CHECK_PROG(CCTEST,$CC,yes,no)
+-    if test "x$CCTEST" = xno; then
+-      AC_MSG_ERROR($CC is unusable or does not exist)
+-    fi
+-  fi
+-  # Check support for XCode clang version:
+-  if test `echo $host | grep -c apple-darwin` -ne 0; then
+-    if test `$CC --version | grep -ci 'Apple'` -ne 0; then
+-      APPLEXCODE="yes"
+-      if test "x$clang12_supported" = xno; then
+-        AC_MSG_CHECKING([whether Apple XCode $CC is supported for your selected components])
+-        changequote(,)
+-        xcode_new=`$CC -dumpversion | grep -c '^[1][23456789]\.[0123456789]'`
+-        changequote([,])
+-        if test $xcode_new -eq 0; then
+-          AC_MSG_RESULT(yes)
+-        else
+-          AC_MSG_RESULT(no)
+-          AC_MSG_WARN(This compiler is not yet supported for MAXI SUZAKU or XIMAGE)
+-          AC_MSG_WARN(Visit the following link for more information:)
+-          AC_MSG_WARN(http://heasarc.gsfc.nasa.gov/lheasoft/macos.html)
+-          AC_MSG_ERROR(Please choose a different C compiler)
+-        fi
+-      fi
+-    fi
+-    # h_mac_arm_build option allows ARM compilers, otherwise disallow them:
+-    if test "x$h_mac_arm_build" = xno; then
+-      AC_MSG_CHECKING([whether $CC is ARM64 architecture])
+-      if test `file \`which $CC\` | grep -ci 'arm64'` -ne 0; then
+-        AC_MSG_RESULT(yes)
+-        AC_MSG_WARN(HEASOFT currently requires Intel/x86_64 compilers on this OS)
+-        AC_MSG_WARN(Visit the following link for more information:)
+-        AC_MSG_WARN(http://heasarc.gsfc.nasa.gov/lheasoft/macos.html)
+-        AC_MSG_ERROR(Please choose or install a different C compiler)
+-      else
+-        AC_MSG_RESULT(no)
+-      fi
+-    fi
+-  fi
+-  # Check functionality:
+-  AC_PROG_CC
+-else
+-  AC_MSG_NOTICE([CC not set, will look for a C compiler downstream.])
+-fi
+-
+-# Existence of FC:
+-if test "x$FC" != x; then
+-  AC_MSG_NOTICE([Checking your Fortran compiler setting ($FC)...])
+-  if test ! -x $FC; then
+-    # Allow for $FC to have been set without a path:
+-    AC_CHECK_PROG(FCTEST,$FC,yes,no)
+-    if test "x$FCTEST" = xno; then
+-      AC_MSG_ERROR($FC is unusable or does not exist)
+-    fi
+-  fi
+-  # Preliminary check for XIMAGE support:
+-  if test "x$APPLEXCODE" = xyes -a "x$clang_old_gfortran_required" = xyes; then
+-    AC_MSG_CHECKING([whether this compiler combination works for XIMAGE])
+-    changequote(,)
+-    old_fortran_test=`$FC -dumpversion | head -n 1 | cut -d" " -f4 | grep -c '^[34567]\.[0123456789]'`
+-    changequote([,])
+-    if test $old_fortran_test -eq 0; then
+-       AC_MSG_RESULT(no)
+-       AC_MSG_WARN(Please avoid Apple XCode C or use a pre-8.0 Fortran compiler)
+-       AC_MSG_WARN(Visit the following link for more information:)
+-       AC_MSG_WARN(http://heasarc.gsfc.nasa.gov/lheasoft/issues.html)
+-       AC_MSG_ERROR(Your compiler choices are not supported for XIMAGE)
+-    else
+-       AC_MSG_RESULT(yes)
+-    fi
+-  fi
+-  # h_mac_arm_build option allows ARM compilers, otherwise disallow them:
+-  if test `echo $host | grep -c apple-darwin` -ne 0 -a "x$h_mac_arm_build" = xno; then
+-    AC_MSG_CHECKING([whether $FC is ARM64 architecture])
+-    if test `file \`which $FC\` | grep -ci 'arm64'` -ne 0; then
+-      AC_MSG_RESULT(yes)
+-      AC_MSG_WARN(HEASOFT currently requires Intel/x86_64 compilers on this OS)
+-      AC_MSG_WARN(Visit the following link for more information:)
+-      AC_MSG_WARN(http://heasarc.gsfc.nasa.gov/lheasoft/macos.html)
+-      AC_MSG_ERROR(Please choose or install a different Fortran compiler)
+-    else
+-      AC_MSG_RESULT(no)
+-    fi
+-  fi
+-  # Check functionality:
+-  AC_PROG_FC
+-else
+-  AC_MSG_NOTICE([FC not set, will look for a Fortran compiler downstream.])
+-fi
+-
+-# Existence of CXX:
+-if test "x$CXX" != x; then
+-  AC_MSG_NOTICE([Checking your C++ compiler setting ($CXX)...])
+-  if test ! -x $CXX; then
+-    # Allow for $CXX to have been set without a path:
+-    AC_CHECK_PROG(CXXTEST,$CXX,yes,no)
+-    if test "x$CXXTEST" = xno; then
+-      AC_MSG_ERROR($CXX is unusable or does not exist)
+-    fi
+-  fi
+-  # h_mac_arm_build option allows ARM compilers, otherwise disallow them:
+-  if test `echo $host | grep -c apple-darwin` -ne 0 -a "x$h_mac_arm_build" = xno; then
+-    AC_MSG_CHECKING([whether $CXX is ARM64 architecture])
+-    if test `file \`which $CXX\` | grep -ci 'arm64'` -ne 0; then
+-      AC_MSG_RESULT(yes)
+-      AC_MSG_WARN(HEASOFT requires Intel/x86_64 compilers on this OS)
+-      AC_MSG_WARN(Visit the following link for more information:)
+-      AC_MSG_WARN(http://heasarc.gsfc.nasa.gov/lheasoft/macos.html)
+-      AC_MSG_ERROR(Please choose or install a different C++ compiler)
+-    else
+-      AC_MSG_RESULT(no)
+-    fi
+-  fi
+-  # Check functionality:
+-  AC_PROG_CXX
+-else
+-  AC_MSG_NOTICE([CXX not set, will look for a C++ compiler downstream.])
+-fi
++APPLEXCODE="yes"
+ 
+ #-------------------------------------------------------------------------------
+ # Recursively configure all selected components.
+@@ -961,6 +837,7 @@ for h_dir in $HD_SELECTED_DIRS; do
+   h_config_heacore=`$hd_scanenv $h_dir/$hd_conf_file HEACORE`
+   h_config_heatools=`$hd_scanenv $h_dir/$hd_conf_file HEATOOLS`
+   h_config_cmd=`$hd_scanenv $h_dir/$hd_conf_file CONFIGURE_CMD`
++  h_config_cmd="$h_config_cmd --host=${target}"
+   if test $? -ne 0 -o "x$h_config_cmd" = x; then
+     AC_MSG_ERROR(Unable to determine how to run configure for $h_comp)
+   fi
+diff --git a/Xspec/BUILD_DIR/Makefile.in b/Xspec/BUILD_DIR/Makefile.in
+index e59dec39..8d19ba71 100644
+--- a/Xspec/BUILD_DIR/Makefile.in
++++ b/Xspec/BUILD_DIR/Makefile.in
+@@ -14,7 +14,7 @@ HD_CLEAN		= ${HD_BLD_EXEC_PFX} ${HD_BLD_PFX}
+ 
+ HD_CTASK		= hd_install
+ 
+-HD_CTASK_SRC_c		= hd_install.c
++ 
+ 
+ HD_CFLAGS               = ${CFLAGS}
+ 
+diff --git a/Xspec/BUILD_DIR/configure.in b/Xspec/BUILD_DIR/configure.in
+index e26f06db..5e850b15 100644
+--- a/Xspec/BUILD_DIR/configure.in
++++ b/Xspec/BUILD_DIR/configure.in
+@@ -605,15 +605,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -645,15 +637,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -715,15 +699,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+@@ -732,28 +707,6 @@ if test "x$GXX" = xyes; then
+ fi
+ AC_SUBST(GXX)
+ 
+-# Custom C++ tests:
+-if test "x$CXX" != "x:"; then
+-  AC_LANG_PUSH([C++])
+-  # Test to see whether the compiler has a std::count defect (Solaris)
+-  AC_CACHE_CHECK(whether the compiler has a std::count defect,ac_cv_cxx_std_count_defect,
+-   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>
+-	#include <vector>
+-	#include <algorithm>
+-        using namespace std;]],
+-        [[vector<int> test(10,1);
+-        int i1 (count(test.begin(),test.end(),1));
+-        int gr1 (count_if(test.begin(),test.end(),bind2nd(greater<int>(),0)));
+-        return 0;
+-   ]])],
+-   [ac_cv_cxx_std_count_defect=no],[ac_cv_cxx_std_count_defect=yes])
+-  )
+-  if test "$ac_cv_cxx_std_count_defect" = yes; then
+-    AC_DEFINE(STD_COUNT_DEFECT,1,[define if the compiler has a std::count defect])
+-  fi
+-  AC_LANG_POP([])
+-fi
+-
+ CXX_BASENAME=`basename $CXX`
+ # Use specialized command when archiving C++ code with Solaris CC:
+ if test "x${UNAME_SYSTEM}" = "xSunOS" -a "x${CXX_BASENAME}" = "xCC"; then
+diff --git a/attitude/BUILD_DIR/configure.in b/attitude/BUILD_DIR/configure.in
+index f1ba080e..29da8957 100644
+--- a/attitude/BUILD_DIR/configure.in
++++ b/attitude/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,6 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +772,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/demo/BUILD_DIR/configure.in b/demo/BUILD_DIR/configure.in
+index f1ba080e..29da8957 100644
+--- a/demo/BUILD_DIR/configure.in
++++ b/demo/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,6 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +772,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/ftools/BUILD_DIR/Makefile.in b/ftools/BUILD_DIR/Makefile.in
+index 8c315d1c..b302ee8c 100644
+--- a/ftools/BUILD_DIR/Makefile.in
++++ b/ftools/BUILD_DIR/Makefile.in
+@@ -14,7 +14,7 @@ HD_CLEAN		= ${HD_BLD_EXEC_PFX} ${HD_BLD_PFX}
+ 
+ HD_CTASK		= hd_install
+ 
+-HD_CTASK_SRC_c		= hd_install.c
++ 
+ 
+ HD_CFLAGS               = ${CFLAGS}
+ 
+diff --git a/ftools/BUILD_DIR/configure.in b/ftools/BUILD_DIR/configure.in
+index 2896d915..bd300065 100644
+--- a/ftools/BUILD_DIR/configure.in
++++ b/ftools/BUILD_DIR/configure.in
+@@ -673,15 +673,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -733,15 +725,6 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -835,15 +818,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/heacore/BUILD_DIR/Makefile.in b/heacore/BUILD_DIR/Makefile.in
+index dc6ab35c..f1a7a07e 100644
+--- a/heacore/BUILD_DIR/Makefile.in
++++ b/heacore/BUILD_DIR/Makefile.in
+@@ -14,7 +14,7 @@ HD_CLEAN		= ${HD_BLD_EXEC_PFX} ${HD_BLD_PFX}
+ 
+ HD_CTASK		= hd_install
+ 
+-HD_CTASK_SRC_c		= hd_install.c
++ 
+ 
+ HD_CFLAGS               = ${CFLAGS}
+ 
+diff --git a/heacore/BUILD_DIR/configure.in b/heacore/BUILD_DIR/configure.in
+index bd8ad7a4..a6b68a5b 100644
+--- a/heacore/BUILD_DIR/configure.in
++++ b/heacore/BUILD_DIR/configure.in
+@@ -360,15 +360,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -420,15 +412,6 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -506,15 +489,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+@@ -1708,6 +1682,7 @@ for h_component in $h_components; do
+       if test $? -ne 0 -o "x$h_config_cmd" = x; then
+         AC_MSG_ERROR(Unable to determine how to run configure for $h_component)
+       fi
++      h_config_cmd="$h_config_cmd --host=${target}"
+       AC_MSG_RESULT(--------------------------------------------------------------------------------)
+       eval echo \"$h_config_cmd\"
+       (eval $h_config_cmd)
+diff --git a/heagen/BUILD_DIR/configure.in b/heagen/BUILD_DIR/configure.in
+index f1ba080e..29da8957 100644
+--- a/heagen/BUILD_DIR/configure.in
++++ b/heagen/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,6 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +772,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/heasim/BUILD_DIR/configure.in b/heasim/BUILD_DIR/configure.in
+index f1ba080e..29da8957 100644
+--- a/heasim/BUILD_DIR/configure.in
++++ b/heasim/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,6 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +772,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/heasptools/BUILD_DIR/configure.in b/heasptools/BUILD_DIR/configure.in
+index f1ba080e..29da8957 100644
+--- a/heasptools/BUILD_DIR/configure.in
++++ b/heasptools/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,6 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +772,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/heatools/BUILD_DIR/configure.in b/heatools/BUILD_DIR/configure.in
+index f1ba080e..29da8957 100644
+--- a/heatools/BUILD_DIR/configure.in
++++ b/heatools/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,6 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +772,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/hitomi/BUILD_DIR/configure.in b/hitomi/BUILD_DIR/configure.in
+index f1ba080e..8fb9ea1a 100644
+--- a/hitomi/BUILD_DIR/configure.in
++++ b/hitomi/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +773,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/integral/BUILD_DIR/configure.in b/integral/BUILD_DIR/configure.in
+index f1ba080e..8fb9ea1a 100644
+--- a/integral/BUILD_DIR/configure.in
++++ b/integral/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +773,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/ixpe/BUILD_DIR/configure.in b/ixpe/BUILD_DIR/configure.in
+index f1ba080e..8fb9ea1a 100644
+--- a/ixpe/BUILD_DIR/configure.in
++++ b/ixpe/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +773,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/maxi/BUILD_DIR/configure.in b/maxi/BUILD_DIR/configure.in
+index f1ba080e..8fb9ea1a 100644
+--- a/maxi/BUILD_DIR/configure.in
++++ b/maxi/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +773,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/nicer/BUILD_DIR/configure.in b/nicer/BUILD_DIR/configure.in
+index f1ba080e..8fb9ea1a 100644
+--- a/nicer/BUILD_DIR/configure.in
++++ b/nicer/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +773,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/nustar/BUILD_DIR/configure.in b/nustar/BUILD_DIR/configure.in
+index f1ba080e..8fb9ea1a 100644
+--- a/nustar/BUILD_DIR/configure.in
++++ b/nustar/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +773,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/suzaku/BUILD_DIR/configure.in b/suzaku/BUILD_DIR/configure.in
+index f1ba080e..8fb9ea1a 100644
+--- a/suzaku/BUILD_DIR/configure.in
++++ b/suzaku/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +773,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/swift/BUILD_DIR/configure.in b/swift/BUILD_DIR/configure.in
+index f1ba080e..8fb9ea1a 100644
+--- a/swift/BUILD_DIR/configure.in
++++ b/swift/BUILD_DIR/configure.in
+@@ -679,15 +679,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -719,15 +711,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -789,15 +773,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+diff --git a/tcltk/BUILD_DIR/Makefile.in b/tcltk/BUILD_DIR/Makefile.in
+index 8a8c8773..c1a44315 100644
+--- a/tcltk/BUILD_DIR/Makefile.in
++++ b/tcltk/BUILD_DIR/Makefile.in
+@@ -13,7 +13,7 @@ HD_CLEAN		= ${HD_BLD_EXEC_PFX} ${HD_BLD_PFX} \
+ 
+ HD_CTASK		= hd_install
+ 
+-HD_CTASK_SRC_c		= hd_install.c
++ 
+ 
+ HD_CFLAGS               = ${CFLAGS}
+ 
+diff --git a/tcltk/BUILD_DIR/configure.in b/tcltk/BUILD_DIR/configure.in
+index 3a97dd7c..96cd39f2 100644
+--- a/tcltk/BUILD_DIR/configure.in
++++ b/tcltk/BUILD_DIR/configure.in
+@@ -485,15 +485,7 @@ AC_PROG_CC
+ if test "x$CC" = x; then
+   AC_MSG_ERROR(Could not find a C compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple C executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++ 
+ if test "x$GCC" = x; then
+   GCC=no
+ fi
+@@ -525,15 +517,7 @@ AC_PROG_F77([$f_search_order ifort])
+ if test "x$F77" = x; then
+   AC_MSG_ERROR(Could not find a Fortran compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple Fortran executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
++
+ if test "x$G77" = x; then
+   G77=no
+ fi
+@@ -595,15 +579,6 @@ if test "x$CXX" = x; then
+ elif test "x$CXX" = "xg++" -a "x$GXX" != xyes; then
+   AC_MSG_ERROR(Could not find a C++ compiler in $PATH)
+ fi
+-if test "$cross_compiling" = yes; then
+-  AC_MSG_WARN(Cannot run a simple G++ executable on your system:)
+-  AC_MSG_WARN(There may be something wrong with your compiler,)
+-  AC_MSG_WARN(or perhaps you are trying to cross-compile?)
+-  AC_MSG_WARN(Cross-compiling is not supported within HEADAS.)
+-  AC_MSG_WARN(Please make sure your compiler is working.)
+-  AC_MSG_WARN(Contact the FTOOLS help desk for further assistance.)
+-  AC_MSG_ERROR(Cross-compiling is not allowed.)
+-fi
+ if test "x$GXX" = x; then
+   GXX=no
+ fi
+@@ -1455,6 +1430,7 @@ for h_component in $h_components; do
+     h_comp_dir=`$hd_scanenv $hd_conf_file ${h_comp_upper}_DIR`
+     if test -d "$h_comp_dir"; then
+       h_config_cmd=`$hd_scanenv $hd_conf_file ${h_component}_CONFIGURE_CMD`
++      h_config_cmd="$h_config_cmd --host=${target}"
+       if test $? -ne 0 -o "x$h_config_cmd" = x; then
+         AC_MSG_ERROR(Unable to determine how to run configure for $h_component)
+       fi
