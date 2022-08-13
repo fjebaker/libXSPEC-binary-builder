@@ -59,33 +59,33 @@ fi
 
 # Can't use `-j`, since parallel compilation breaks XSPEC :/
 # XSPEC compiles `hd_install` as the first target, which is used throughout the rest of the Makefile
-# make
-# make install
+make
+make install
 
-# # Move libraries around to put them all in the export location
-# rm -fr ${prefix}/heacore/*/lib/cmake ${prefix}/heacore/*/lib/pkgconfig
-# mv ${prefix}/heacore/*/lib/* ${prefix}/lib/
-# mv ${prefix}/heacore/*/include/* ${prefix}/include/
-# mv ${prefix}/Xspec/*/lib/* ${prefix}/lib/
-# mv ${prefix}/Xspec/*/include/* ${prefix}/include/
+# Move libraries around to put them all in the export location
+rm -fr ${prefix}/heacore/*/lib/cmake ${prefix}/heacore/*/lib/pkgconfig
+mv ${prefix}/heacore/*/lib/* ${prefix}/lib/
+mv ${prefix}/heacore/*/include/* ${prefix}/include/
+mv ${prefix}/Xspec/*/lib/* ${prefix}/lib/
+mv ${prefix}/Xspec/*/include/* ${prefix}/include/
 
-# # Remove bloat
-# ls ${prefix}
-# rm -r ${prefix}/heacore \
-#     ${prefix}/Xspec \
-#     ${prefix}/$(uname -m)-* \
-#     ${prefix}/logs \
-#     ${prefix}/spectral/help \
-#     ${prefix}/include \
-#     ${prefix}/spectral/scripts \
-#     ${prefix}/bin  
+# Remove bloat
+ls ${prefix}
+rm -r ${prefix}/heacore \
+    ${prefix}/Xspec \
+    ${prefix}/$(uname -m)-* \
+    ${prefix}/logs \
+    ${prefix}/spectral/help \
+    ${prefix}/include \
+    ${prefix}/spectral/scripts \
+    ${prefix}/bin  
 
-# # Remove large modelData files so we can actually upload artifact
-# rm -rf ${prefix}/spectral/modelData
+# Remove large modelData files so we can actually upload artifact
+rm -rf ${prefix}/spectral/modelData
 
-# # Concatanate all of the licenses
-# cat ${WORKSPACE}/srcdir/licenses/* > ${WORKSPACE}/srcdir/LICENSE
-# install_license ${WORKSPACE}/srcdir/LICENSE
+# Concatanate all of the licenses
+cat ${WORKSPACE}/srcdir/licenses/* > ${WORKSPACE}/srcdir/LICENSE
+install_license ${WORKSPACE}/srcdir/LICENSE
 """
 
 platforms = [
