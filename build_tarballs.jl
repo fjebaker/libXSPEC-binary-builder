@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "LibXSPEC"
 
 # !!! don't make changes without bumping !!!
-version = v"0.1.14"
+version = v"0.1.15"
 
 sources = [
     # ArchiveSource("https://heasarc.gsfc.nasa.gov/cgi-bin/Tools/tarit/tarit.pl?mode=download&arch=src&src_pc_linux_debian=Y&src_other_specify=&general=heasptools&general=heagen&xanadu=xspec")
