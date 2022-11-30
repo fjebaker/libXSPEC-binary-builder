@@ -1,0 +1,29 @@
+From 74f5270bb9b2013b815c5e9b283831692a2d038f Mon Sep 17 00:00:00 2001
+From: fjebaker <fergusbkr@gmail.com>
+Date: Wed, 30 Nov 2022 14:08:14 +0000
+Subject: [PATCH 1/1] modifications for generic builds
+
+---
+ other/Makefile | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/other/Makefile b/other/Makefile
+index 5f0b0c4..d24c2ef 100644
+--- a/other/Makefile
++++ b/other/Makefile
+@@ -2,10 +2,8 @@ SRC_KYNREFREV=xside_threads.c xside.c libxspec.c fft_reverberation.c xskynrefrev
+ SRC_KYNXILREV=xside_threads.c xside.c libxspec.c fft_reverberation.c xskynxilrev.c
+ 
+ CC=gcc
+-INCLUDE=-I/usr/local/share/heasoft/x86_64-unknown-linux-gnu-libc2.19/include
+-LIBRARY_PATH=-L/usr/local/share/heasoft/x86_64-unknown-linux-gnu-libc2.19/lib
+-LIBRARY= -lcfitsio_3.37 -lpthread
+-CFLAGS=-fPIC -O3 -Wall -DOUTSIDE_XSPEC -lm
++LIBRARY= -lcfitsio -lpthread
++CFLAGS=-fPIC -O3 -Wall -lm --shared
+ 
+ kynrefrev: $(SRC_KYNREFREV)
+ 		$(CC) $(CFLAGS) $(INCLUDE) -o $@ $(SRC_KYNREFREV) $(LIBRARY_PATH) $(LIBRARY)
+-- 
+2.30.2
+
