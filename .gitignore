@@ -6,3 +6,6 @@ Manifest.toml
 notes
 shell.jl
 test.jl
+build.sh
+*.tgz
+extra/*/Project.toml
