@@ -2,7 +2,7 @@ using BinaryBuilder
 
 name = "LibXSPEC_KYNReverb"
 
-version = v"0.1.0"
+version = v"0.1.1"
 
 sources = [
     GitSource("https://github.com/xstarkit/kynreverb", "8a47ce589374d17f1fb1e12425e4fa047cacb8f3"),
@@ -27,7 +27,6 @@ else
     EXT=so
 fi
 
-
 # move everything to top level directory
 mv other/* ./
 
@@ -46,13 +45,13 @@ install_license LICENSE
 
 platforms = [
     Platform("x86_64", "linux"; libc="glibc", libgfortran_version="5.0.0"),
-    # Platform("x86_64", "linux"; libc="glibc", libgfortran_version="4.0.0"),
-    # Platform("aarch64", "macos"; libgfortran_version="5.0.0"),
-    # Platform("x86_64", "macos"; libgfortran_version="5.0.0"),
-    # Platform("x86_64", "macos"; libgfortran_version="4.0.0")
+    Platform("x86_64", "linux"; libc="glibc", libgfortran_version="4.0.0"),
+    Platform("aarch64", "macos"; libgfortran_version="5.0.0"),
+    Platform("x86_64", "macos"; libgfortran_version="5.0.0"),
+    Platform("x86_64", "macos"; libgfortran_version="4.0.0")
 ]
-# platforms = expand_cxxstring_abis(platforms)
-# platforms = expand_gfortran_versions(platforms)
+platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 products = [LibraryProduct("kynrefrev", :libXSPEC_kynrefrev)]
 
