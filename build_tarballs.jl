@@ -74,9 +74,7 @@ ls ${prefix}
 rm -r ${prefix}/heacore \
     ${prefix}/Xspec \
     ${prefix}/$(uname -m)-* \
-    ${prefix}/logs \
     ${prefix}/spectral/help \
-    ${prefix}/include \
     ${prefix}/spectral/scripts \
     ${prefix}/bin  
 
