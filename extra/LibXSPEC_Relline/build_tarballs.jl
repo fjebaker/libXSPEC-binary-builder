@@ -5,8 +5,14 @@ name = "LibXSPEC_Relline"
 version = v"0.1.1"
 
 sources = [
-    ArchiveSource("http://www.sternwarte.uni-erlangen.de/~dauser/research/relline/relline_code.tgz", "e645e52b6aeb63c5af909d42ac9d89058619196e5ce9c30fe4662b4ccf255c99"),
-    ArchiveSource("http://www.sternwarte.uni-erlangen.de/~dauser/research/relline/tables.fits.tgz", "bee959c560aa824a8534e8a9c21f2b7f4ec1051ca94b88906ca07041d4524432"),
+    ArchiveSource(
+        "http://www.sternwarte.uni-erlangen.de/~dauser/research/relline/relline_code.tgz",
+        "e645e52b6aeb63c5af909d42ac9d89058619196e5ce9c30fe4662b4ccf255c99",
+    ),
+    ArchiveSource(
+        "http://www.sternwarte.uni-erlangen.de/~dauser/research/relline/tables.fits.tgz",
+        "bee959c560aa824a8534e8a9c21f2b7f4ec1051ca94b88906ca07041d4524432",
+    ),
 ]
 
 scripts = raw"""
@@ -37,24 +43,32 @@ install_license LICENSE
 """
 
 platforms = [
-    Platform("x86_64", "linux"; libc="glibc", libgfortran_version="5.0.0"),
-    Platform("x86_64", "linux"; libc="glibc", libgfortran_version="4.0.0"),
-    Platform("aarch64", "macos"; libgfortran_version="5.0.0"),
-    Platform("x86_64", "macos"; libgfortran_version="5.0.0"),
-    Platform("x86_64", "macos"; libgfortran_version="4.0.0")
+    Platform("x86_64", "linux"; libc = "glibc", libgfortran_version = "5.0.0"),
+    Platform("x86_64", "linux"; libc = "glibc", libgfortran_version = "4.0.0"),
+    Platform("aarch64", "macos"; libgfortran_version = "5.0.0"),
+    Platform("x86_64", "macos"; libgfortran_version = "5.0.0"),
+    Platform("x86_64", "macos"; libgfortran_version = "4.0.0"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 products = [LibraryProduct("relline", :libXSPEC_relline)]
 
-dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
-    Dependency("LibXSPEC_jll")
-]
+dependencies = [Dependency("CompilerSupportLibraries_jll"), Dependency("LibXSPEC_jll")]
 
 init_block = """# set environment variable needed by the models
     ENV["RELLINE_TABLES"] = $(name)_jll.artifact_dir * "/data"
 """
 
-build_tarballs(ARGS, name, version, sources, scripts, platforms, products, dependencies; julia_compat="1.6", init_block=init_block, )
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    scripts,
+    platforms,
+    products,
+    dependencies;
+    julia_compat = "1.6",
+    init_block = init_block,
+)

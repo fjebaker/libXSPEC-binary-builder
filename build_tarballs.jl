@@ -8,7 +8,7 @@ version = v"0.1.15"
 sources = [
     # ArchiveSource("https://heasarc.gsfc.nasa.gov/cgi-bin/Tools/tarit/tarit.pl?mode=download&arch=src&src_pc_linux_debian=Y&src_other_specify=&general=heasptools&general=heagen&xanadu=xspec")
     DirectorySource("heasoft-6.30.1"),
-    DirectorySource("bundled")
+    DirectorySource("bundled"),
 ]
 
 scripts = raw"""
@@ -87,11 +87,11 @@ install_license ${WORKSPACE}/srcdir/LICENSE
 """
 
 platforms = [
-    Platform("x86_64", "linux"; libc="glibc", libgfortran_version="5.0.0"),
-    Platform("x86_64", "linux"; libc="glibc", libgfortran_version="4.0.0"),
-    Platform("aarch64", "macos"; libgfortran_version="5.0.0"),
-    Platform("x86_64", "macos"; libgfortran_version="5.0.0"),
-    Platform("x86_64", "macos"; libgfortran_version="4.0.0")
+    Platform("x86_64", "linux"; libc = "glibc", libgfortran_version = "5.0.0"),
+    Platform("x86_64", "linux"; libc = "glibc", libgfortran_version = "4.0.0"),
+    Platform("aarch64", "macos"; libgfortran_version = "5.0.0"),
+    Platform("x86_64", "macos"; libgfortran_version = "5.0.0"),
+    Platform("x86_64", "macos"; libgfortran_version = "4.0.0"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
@@ -102,7 +102,7 @@ products = map([
     "libfgsl" => :libfgsl,
     "libXS" => :libXS,
     "libXSUtil" => :libXSUtil,
-    "libXSFunctions" => :libXSFunctions
+    "libXSFunctions" => :libXSFunctions,
 ]) do lib
     LibraryProduct(first(lib), last(lib))
 end
@@ -110,11 +110,22 @@ end
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Ncurses_jll"),
-    Dependency("Zlib_jll")
+    Dependency("Zlib_jll"),
 ]
 
 init_block = raw"""# set environment variable needed by the models
     ENV["HEADAS"] = LibXSPEC_jll.artifact_dir
 """
 
-build_tarballs(ARGS, name, version, sources, scripts, platforms, products, dependencies; julia_compat="1.6", init_block=init_block, )
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    scripts,
+    platforms,
+    products,
+    dependencies;
+    julia_compat = "1.6",
+    init_block = init_block,
+)
