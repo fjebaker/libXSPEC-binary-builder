@@ -2,44 +2,69 @@ using BinaryBuilder
 
 name = "LibXSPEC"
 
-# !!! don't make changes without bumping !!!
-version = v"0.1.15"
+version = v"6.35.1"
 
 sources = [
-    # ArchiveSource("https://heasarc.gsfc.nasa.gov/cgi-bin/Tools/tarit/tarit.pl?mode=download&arch=src&src_pc_linux_debian=Y&src_other_specify=&general=heasptools&general=heagen&xanadu=xspec")
-    DirectorySource("heasoft-6.30.1"),
+    ArchiveSource(
+         "https://heasarc.gsfc.nasa.gov/FTP/software/lheasoft/lheasoft6.35.1/heasoft-6.35.1src.tar.gz",
+	 "60515214c01dbf3bea13fce27b5a2335f0be051172c745922cfe4c0be442bbbb",
+    ),
     DirectorySource("bundled"),
 ]
 
 scripts = raw"""
+echo "Starting build..."
+
+cd ${WORKSPACE}/srcdir/
+mv heasoft-6.35.1 BUILD_DIR
+cd BUILD_DIR
+
 # Replace paths to use `spectral` directory directly in `$HEADAS`
 # Commented out for now since did this on host to save time
-# find ${WORKSPACE}/srcdir -type f -print0 | xargs -0 sed -i 's|../spectral/|spectral/|g'
 
-cd ${WORKSPACE}/srcdir/BUILD_DIR
+modfiles=(
+    Xspec/src/XSFunctions/hatm.cxx
+    Xspec/src/XSFunctions/Utilities/xsFortran.cxx
+    Xspec/src/XSFunctions/carbatm.cxx
+    Xspec/src/scripts/xspec.tcl
+    Xspec/src/scripts/xspec.tcl
+    Xspec/src/XSUser/Python/mxspec/pymXspecmodule.cxx
+    Xspec/src/XSUser/Python/mxspec/pymXspecmodule.cxx
+    Xspec/src/tools/raysmith/rayspec_m.f
+    Xspec/src/XSUser/Global/Global.cxx
+)
+
+for file in "${modfiles[@]}" ; do
+    sed -i 's|../spectral/|spectral/|g' "$file"
+done
+
+echo "Done path patch"
 
 # Need this to avoid undefined symbols
 export LDFLAGS="-lgfortran"
+
+if [[ ${target} == *'apple-darwin'* ]] ; then
+    # Apply patch
+    atomic_patch -p1 ../patches/apple.patch
+else
+    atomic_patch -p1 ../patches/linux.patch
+fi
+
+# Run autoconf in each build directory to propagate changes to build files
+cd ..
+find . -type d -name "BUILD_DIR" -exec autoconf -f -o {}/configure {}/configure.in \;
+cd BUILD_DIR/BUILD_DIR
 
 CONFIGURE_FLAGS="--prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-x --enable-xs-models-only"
 
 if [[ ${target} == *'apple-darwin'* ]] ; then
     # Need to link BLAS and quadmath explicitly to avoid missing symbols on OSX
     export LDFLAGS="$LDFLAGS -lblas -lquadmath"
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --target=${target}"
 
-    if [[ ${target} == *'aarch64-apple-darwin'* ]] ; then
-        CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-mac_arm_build"
+    if [[ ${target} != *'aarch64-apple-darwin'* ]] ; then
+        CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-mac_intel_build"
     fi
-
-    # Apply patch, need to step up out of directory and then back in
-    cd ${WORKSPACE}/srcdir
-    atomic_patch -p1 patches/apple.patch
-
-    # Run autoconf in each build directory to propagate changes to build files
-    find . -type d -name "BUILD_DIR" -exec autoconf -f -o {}/configure {}/configure.in \;
-    
-    # Step back in
-    cd ${WORKSPACE}/srcdir/BUILD_DIR
 
     # Need to compile hd_install for the container seperately
     /opt/x86_64-linux-musl/bin/x86_64-linux-musl-gcc -o ./hd_install.o -Wall --pedantic -Wno-comment -Wno-long-long -g  -Dunix -fPIC -fno-common hd_install.c
@@ -47,11 +72,10 @@ if [[ ${target} == *'apple-darwin'* ]] ; then
     rm -f hd_install.c
 
     # Copy it everywhere it is needed and remove the old source version
-    for i in $(find ${WORKSPACE}/srcdir -type f -name "hd_install.c"); do loc=$(dirname $i) && cp ${WORKSPACE}/srcdir/BUILD_DIR/hd_install $loc && rm -f $loc/hd_install.c; done
-else
-    export FC=$(which gcc)
-    export CC=$(which gcc)
-    export CXX=$(which g++)
+    cp hd_install ../heacore/BUILD_DIR 
+    rm ../heacore/BUILD_DIR/hd_install.c
+    cp hd_install ../Xspec/BUILD_DIR
+    rm ../Xspec/BUILD_DIR/hd_install.c
 fi
 
 # Configure with selected flags
@@ -82,7 +106,7 @@ rm -r ${prefix}/heacore \
 rm -rf ${prefix}/spectral/modelData
 
 # Concatanate all of the licenses
-cat ${WORKSPACE}/srcdir/licenses/* > ${WORKSPACE}/srcdir/LICENSE
+cat ${WORKSPACE}/srcdir/BUILD_DIR/licenses/* > ${WORKSPACE}/srcdir/LICENSE
 install_license ${WORKSPACE}/srcdir/LICENSE
 """
 
