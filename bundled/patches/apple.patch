@@ -1,12 +1,14 @@
 diff --git a/BUILD_DIR/Makefile.in b/BUILD_DIR/Makefile.in
-index 72fce22..c4c16f1 100644
+index 72fce22..0c42fbf 100644
 --- a/BUILD_DIR/Makefile.in
 +++ b/BUILD_DIR/Makefile.in
-@@ -11,7 +11,7 @@ all local: check-selection hd_install
+@@ -10,8 +10,8 @@ all local: check-selection hd_install
+ 	@${MAKE} ${HD_SELECTED} HD_TARGET=$@
  	@echo "Finished make $@" >&2
  
- hd_install: hd_install.c
+-hd_install: hd_install.c
 -	${CC} -o $@ hd_install.c
++hd_install:
 +	@echo "SKIP"
  
  install: check-selection
@@ -286,18 +288,20 @@ index 7ba0458..80708ea 100644
      AC_MSG_ERROR(Unable to determine how to run configure for $h_comp)
    fi
 diff --git a/Xspec/BUILD_DIR/Makefile.in b/Xspec/BUILD_DIR/Makefile.in
-index 225bd33..164e1f4 100644
+index 225bd33..a7f4ba7 100644
 --- a/Xspec/BUILD_DIR/Makefile.in
 +++ b/Xspec/BUILD_DIR/Makefile.in
-@@ -14,8 +14,6 @@ HD_CLEAN		= ${HD_BLD_EXEC_PFX} ${HD_BLD_PFX}
+@@ -12,9 +12,7 @@ HD_DISTCLEAN		= config.cache config.log config.status \
  
- HD_BLD_CTASK		= hd_install
+ HD_CLEAN		= ${HD_BLD_EXEC_PFX} ${HD_BLD_PFX}
  
--HD_BLD_CTASK_SRC_c	= hd_install.c
+-HD_BLD_CTASK		= hd_install
 -
+-HD_BLD_CTASK_SRC_c	= hd_install.c
++HD_BLD_CTASK		= 
+ 
  #HD_CFLAGS               = ${CFLAGS}
  
- HD_INSTALL_TASKS	= hd_install
 diff --git a/Xspec/BUILD_DIR/configure.in b/Xspec/BUILD_DIR/configure.in
 index 8183d8e..7d49f61 100644
 --- a/Xspec/BUILD_DIR/configure.in
@@ -374,6 +378,25 @@ index 8183d8e..7d49f61 100644
    LDFLAGS_SAVE="${LDFLAGS}"
    LDFLAGS="${LDFLAGS} -std=c++11"
    AC_CACHE_CHECK(whether the host requires -lpthread,ac_cv_cxx_pthread,
+diff --git a/Xspec/src/XSUtil/Utils/TimeUtility.cxx b/Xspec/src/XSUtil/Utils/TimeUtility.cxx
+index 0f75e7f..a28a312 100644
+--- a/Xspec/src/XSUtil/Utils/TimeUtility.cxx
++++ b/Xspec/src/XSUtil/Utils/TimeUtility.cxx
+@@ -41,14 +41,7 @@ namespace TimeUtility {
+ 
+     timespec tnow;
+     
+-// This macro may not be necessary in the future.  It was implemented
+-//  because an old SL6 platform did not have timespec_get.  Meanwhile
+-//  old Mac platforms may not have clock_gettime.
+-# if defined(__APPLE__) 
+-    timespec_get(&tnow, TIME_UTC);
+-#else
+     clock_gettime(CLOCK_REALTIME, &tnow);
+-#endif
+     m_clockTime = static_cast<Real>(tnow.tv_sec) + 
+                    N9*static_cast<Real>(tnow.tv_nsec);
+   }
 diff --git a/attitude/BUILD_DIR/configure.in b/attitude/BUILD_DIR/configure.in
 index 81e3a04..99b2533 100644
 --- a/attitude/BUILD_DIR/configure.in
@@ -544,20 +567,22 @@ index a984e9f..bb156c1 100644
    GXX=no
  fi
 diff --git a/heacore/BUILD_DIR/Makefile.in b/heacore/BUILD_DIR/Makefile.in
-index d24d179..0c3ddc2 100644
+index d24d179..f117032 100644
 --- a/heacore/BUILD_DIR/Makefile.in
 +++ b/heacore/BUILD_DIR/Makefile.in
-@@ -14,8 +14,6 @@ HD_CLEAN		= ${HD_BLD_EXEC_PFX} ${HD_BLD_PFX}
+@@ -12,9 +12,7 @@ HD_DISTCLEAN		= config.cache config.log config.status \
  
- HD_BLD_CTASK		= hd_install
+ HD_CLEAN		= ${HD_BLD_EXEC_PFX} ${HD_BLD_PFX}
  
--HD_BLD_CTASK_SRC_c	= hd_install.c
+-HD_BLD_CTASK		= hd_install
 -
+-HD_BLD_CTASK_SRC_c	= hd_install.c
++HD_BLD_CTASK		= 
+ 
  #HD_CFLAGS               = ${CFLAGS}
  
- HD_INSTALL_TASKS	= hd_install
 diff --git a/heacore/BUILD_DIR/configure.in b/heacore/BUILD_DIR/configure.in
-index 958c18c..341a20d 100644
+index 958c18c..89c4ac4 100644
 --- a/heacore/BUILD_DIR/configure.in
 +++ b/heacore/BUILD_DIR/configure.in
 @@ -431,15 +431,6 @@ AC_PROG_CC([$c_search_order])
@@ -608,7 +633,24 @@ index 958c18c..341a20d 100644
  if test "x$GXX" = x; then
    GXX=no
  fi
-@@ -2025,6 +1998,7 @@ for h_component in $h_components; do
+@@ -952,6 +925,7 @@ PYTHON_LIB=""
+ PY_CONFIG=""
+ NUMPY_INC=""
+ AC_PATH_PROGS(PYTHON, python3 python)
++PYTHON=""
+ if test "x$PYTHON" = x -o ! -x "$PYTHON"; then
+   AC_MSG_WARN(Python executable $PYTHON not found or unusable - not building HEASoftPy or the HEASP Python interface)
+   PYTHON=""
+@@ -1251,7 +1225,7 @@ AC_SUBST(NUMPY_INC)
+ # Mac Silicon sanity check that all compilers have arm64 architecture:
+ #-------------------------------------------------------------------------------
+ 
+-if test `echo $host | grep -c aarch64-apple-darwin` -ne 0; then
++if test `echo $host | grep -c aarch64-apple-darwin-silliness` -ne 0; then
+ 
+   AC_MSG_NOTICE([Checking compiler choices for compatibility on Silicon...])
+ 
+@@ -2025,6 +1999,7 @@ for h_component in $h_components; do
        if test $? -ne 0 -o "x$h_config_cmd" = x; then
          AC_MSG_ERROR(Unable to determine how to run configure for $h_component)
        fi
