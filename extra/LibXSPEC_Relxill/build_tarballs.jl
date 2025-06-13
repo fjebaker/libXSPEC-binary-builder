@@ -2,12 +2,12 @@ using BinaryBuilder
 
 name = "LibXSPEC_Relxill"
 
-version = v"0.2.3"
+version = v"0.2.4"
 
 sources = [
     ArchiveSource(
-        "http://www.sternwarte.uni-erlangen.de/~dauser/research/relxill/relxill_model_v2.3.tgz",
-        "f90ea2a3a98eaafcf1a161b4e40194f940613a5ac3e789ffcca3678bc8d76ae0",
+        "http://sternwarte.uni-erlangen.de/~dauser/research/relxill/relxill_model_v2.4.tgz",
+        "f510733a51626ec15d014f4b0ed2e230c796f8f8f6d804c4253790960b085232",
     ),
     DirectorySource("bundled"),
     FileSource(
