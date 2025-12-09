@@ -127,6 +127,7 @@ products = map([
     "libXS" => :libXS,
     "libXSUtil" => :libXSUtil,
     "libXSFunctions" => :libXSFunctions,
+    "libXSModel" => :libXSModel,
 ]) do lib
     LibraryProduct(first(lib), last(lib))
 end
