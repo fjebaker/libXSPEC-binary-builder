@@ -6,8 +6,8 @@ version = v"6.35.1"
 
 sources = [
     ArchiveSource(
-         "https://heasarc.gsfc.nasa.gov/FTP/software/lheasoft/lheasoft6.35.1/heasoft-6.35.1src.tar.gz",
-	 "60515214c01dbf3bea13fce27b5a2335f0be051172c745922cfe4c0be442bbbb",
+        "https://heasarc.gsfc.nasa.gov/FTP/software/lheasoft/lheasoft6.35.1/heasoft-6.35.1src.tar.gz",
+        "60515214c01dbf3bea13fce27b5a2335f0be051172c745922cfe4c0be442bbbb",
     ),
     DirectorySource("bundled"),
 ]
@@ -72,7 +72,7 @@ if [[ ${target} == *'apple-darwin'* ]] ; then
     rm -f hd_install.c
 
     # Copy it everywhere it is needed and remove the old source version
-    cp hd_install ../heacore/BUILD_DIR 
+    cp hd_install ../heacore/BUILD_DIR
     rm ../heacore/BUILD_DIR/hd_install.c
     cp hd_install ../Xspec/BUILD_DIR
     rm ../Xspec/BUILD_DIR/hd_install.c
@@ -100,7 +100,7 @@ rm -r ${prefix}/heacore \
     ${prefix}/$(uname -m)-* \
     ${prefix}/spectral/help \
     ${prefix}/spectral/scripts \
-    ${prefix}/bin  
+    ${prefix}/bin
 
 # Remove large modelData files so we can actually upload artifact
 rm -rf ${prefix}/spectral/modelData
