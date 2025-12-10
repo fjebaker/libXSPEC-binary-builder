@@ -35,13 +35,13 @@ install_license ../LICENSE
 
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc", libgfortran_version = "5.0.0"),
-    # Platform("x86_64", "linux"; libc = "glibc", libgfortran_version = "4.0.0"),
-    # Platform("aarch64", "macos"; libgfortran_version = "5.0.0"),
-    # Platform("x86_64", "macos"; libgfortran_version = "5.0.0"),
-    # Platform("x86_64", "macos"; libgfortran_version = "4.0.0"),
+    Platform("x86_64", "linux"; libc = "glibc", libgfortran_version = "4.0.0"),
+    Platform("aarch64", "macos"; libgfortran_version = "5.0.0"),
+    Platform("x86_64", "macos"; libgfortran_version = "5.0.0"),
+    Platform("x86_64", "macos"; libgfortran_version = "4.0.0"),
 ]
-# platforms = expand_cxxstring_abis(platforms)
-# platforms = expand_gfortran_versions(platforms)
+platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 products = [LibraryProduct("libreltrans", :libXSPEC_reltrans)]
 
