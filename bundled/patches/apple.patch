@@ -1,8 +1,8 @@
-diff --git a/BUILD_DIR/configure b/BUILD_DIR/configure
-index 612f317..194c167 100755
---- a/BUILD_DIR/configure
-+++ b/BUILD_DIR/configure
-@@ -3611,7 +3611,7 @@ h_Xspec_components="src/xslib src/XSUtil src/XSFunctions src/XSModel src/XSStat
+diff --git a/BUILD_DIR/configure.in b/BUILD_DIR/configure.in
+index 7ba0458..71e66e1 100644
+--- a/BUILD_DIR/configure.in
++++ b/BUILD_DIR/configure.in
+@@ -844,7 +844,7 @@ h_Xspec_components="src/xslib src/XSUtil src/XSFunctions src/XSModel src/XSStat
  if test "$h_xs_models_only" = yes; then
    h_heacore_components="gsl fgsl fftw cfitsio ape heaio heautils wcslib CCfits heasp"
    h_tcltk_components=""
