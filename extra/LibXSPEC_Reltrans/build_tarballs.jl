@@ -7,7 +7,7 @@ version = v"2.3.1"
 sources = [
     GitSource(
         "https://github.com/fjebaker/reltrans/",
-        "48f1c16d2a475d264057c4db2d3415fa05937aef",
+        "874f37d27517057dc98e31c104f9b1cbfdc5fed2",
     ),
     # TODO: add data sources? else make them dynamically fetched (probably better)
 ]
@@ -17,8 +17,15 @@ cd ${WORKSPACE}/srcdir
 
 export HEADAS="${prefix}"
 
+# Specify the target to the build script, since cross-compiling will not
+# resolve uname
+TARGET=Linux
+if [[ ${target} == *'apple-darwin'* ]] ; then
+    TARGET=Darwin
+fi
+
 cd utils
-make
+make TARGET=$TARGET
 
 mkdir -p ${prefix}/lib
 mv build/lib/* ${prefix}/lib/
