@@ -7,7 +7,7 @@ version = v"2.3.1"
 sources = [
     GitSource(
         "https://github.com/fjebaker/reltrans/",
-        "11bcf354f446bc9c298015dbc319f4712e19c8f2",
+        "5bf17cb5dbdcf24b1957e6d9b7d93808c6e8e9b8",
     ),
     # TODO: add data sources? else make them dynamically fetched (probably better)
 ]
